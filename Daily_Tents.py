@@ -54,6 +54,11 @@ class Daily_Tents(boardgame.BoardGame):
             board.append(tmp)
         return board
     
+    def make_everything_green(self):
+        for y in range(self.rows()):
+            for x in range(self.cols()):
+                if self.read(x, y) == "":
+                    self.add_green((x, y))
 
     def initialize_tree(self, positions):
         for p in positions:
@@ -86,6 +91,21 @@ class Daily_Tents(boardgame.BoardGame):
 
     def read(self, x, y): 
         return str(self._board[y][x])
+    
+    def get_column_tents(self, y) -> int:
+        num = 0
+        for x in range(self.cols()):
+            if self.is_tent((x, y)):
+                num += 1
+        return num
+    
+    def get_row_tents(self, x):
+        num = 0
+        for y in range(self.rows()):
+            if self.is_tent((x, y)):
+                num += 1
+        return num
+        
 
     def count_tree(self):
         num_tents = 0
@@ -140,7 +160,7 @@ class Daily_Tents(boardgame.BoardGame):
             count_tree += self.check_tents_around(pos)
         for pos in self.get_tents_pos():
             count_tents += self.check_tree_around(pos)
-        return count_tents == count_tree and self.count_tree() == self.count_tents()
+        return count_tents == count_tree and self.count_tree() == count_tents
 
     def rows(self): return self._h
     
