@@ -11,7 +11,7 @@ except:
 from boardgame import BoardGame
 
 W, H = 40, 40
-BLACK, GRAY, WHITE = (0, 0, 0), (127, 127, 127), (255, 255, 255)
+BLACK, GRAY, WHITE, GREEN = (0, 0, 0), (127, 127, 127), (255, 255, 255), (0, 255, 0)
 
 class BoardGameGui:
     def __init__(self, game: BoardGame,
@@ -27,7 +27,6 @@ class BoardGameGui:
         mouse_x, mouse_y = g2d.mouse_pos()
         x, y = mouse_x // W, mouse_y // H
         released = set(g2d.previous_keys()) - set(g2d.current_keys())
-        print(released)
         if game.finished():
             g2d.alert(game.status())
             g2d.close_canvas()
@@ -65,8 +64,19 @@ class BoardGameGui:
         chars = max(1, len(text))
         fsize = min(0.75 * H, 1.5 * cols * W / chars)
         center = (x * W + cols * W/2, y * H + H/2)
-        g2d.set_color(BLACK)
-        g2d.draw_text(text, center, fsize)
+        
+        # section of choceing che 
+        if text == "green":
+            g2d.set_color(GREEN)
+            g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
+        elif text == "⛺":
+            g2d.set_color(GREEN)
+            g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
+            g2d.set_color(BLACK)
+            g2d.draw_text(text, center, fsize)
+        else:
+            g2d.set_color(BLACK)
+            g2d.draw_text(text, center, fsize)
 
 def gui_play(game: BoardGame):
     g2d.init_canvas((game.cols() * W, game.rows() * H + H))

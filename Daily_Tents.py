@@ -32,7 +32,15 @@ class Daily_Tents(boardgame.BoardGame):
         #______________________________________________
 
     def play(self, x, y, action):
-        self.add_tent((x, y))
+
+        # TO DO looping beetween white -> green -> tent
+        if self.read(x, y) == "":
+            self.add_green((x, y))
+        elif self.read(x, y) == "green":
+            self.add_tent((x, y))
+        elif self.read(x, y) == "⛺":
+            self.clear_cell((x, y))
+            
     
     def initializa_board(self, w, h) -> list[list]:
         # width wich means the amount of cols we will have
@@ -46,13 +54,28 @@ class Daily_Tents(boardgame.BoardGame):
             board.append(tmp)
         return board
     
-    def add_tree(self, pos):
-        x, y = pos
-        self._board[y][x] = "🌳"
 
     def initialize_tree(self, positions):
         for p in positions:
             self.add_tree(p)
+
+    def clear_cell(self, pos):
+        x, y = pos
+        self._board[y][x] = ""
+
+    def is_tent(self, pos):
+        x, y = pos
+        if self.read(x, y) == "⛺":
+            return True
+        return False
+    
+    def add_green(self, pos):
+        x, y = pos
+        self._board[y][x] = "green"
+    
+    def add_tree(self, pos):
+        x, y = pos
+        self._board[y][x] = "🌳"
 
     def add_tent(self, pos):
         x, y = pos
