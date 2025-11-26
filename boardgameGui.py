@@ -27,6 +27,7 @@ class BoardGameGui:
         mouse_x, mouse_y = g2d.mouse_pos()
         x, y = mouse_x // W, mouse_y // H
         released = set(g2d.previous_keys()) - set(g2d.current_keys())
+        print(released)
         if game.finished():
             g2d.alert(game.status())
             g2d.close_canvas()
