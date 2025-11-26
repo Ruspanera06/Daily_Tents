@@ -1,34 +1,38 @@
 import boardgame
+from random import shuffle
+import copy
 
 #   little rappresentation of the cells around
-# POSITIONS_CELLS_AROUND = [
-#     (-1, -1),(0, -1),(1, -1),
-#     (1, 0),          (1,  0),
-#     (-1, +1),(0, +1),(+1,+1)
-# ]
-
 POSITIONS_CELLS_AROUND = [
-            (0, -1),
-    (-1, 0),          (1,  0),
-            (0, +1)
+    (-1, -1),(0, -1),(1, -1),
+    (1, 0),          (1,  0),
+    (-1, +1),(0, +1),(+1,+1)
 ]
+
+# POSITIONS_CELLS_AROUND = [
+#             (0, -1),
+#     (-1, 0),          (1,  0),
+#             (0, +1)
+# ]
 
 class Daily_Tents(boardgame.BoardGame):
     def __init__(self, w, h):
         super().__init__()
         self._w, self._h = w, h
-        self._board = self.initializa_board(self._w, self._h)
+        self._board = self.initialize_board(self._w, self._h)
+        self.initialize_tents()
+        self._real_board = copy.deepcopy(self._board)
         self._finished = False
         #comment the section below when the test is finished
         #______________________________________________
-        postions_tree = [
-            (1, 0),
-            (4, 1),
-            (1, 2),
-            (3, 2),
-            (4, 3),
-        ]
-        self.initialize_tree(postions_tree)
+        # postions_tree = [
+        #     (1, 0),
+        #     (4, 1),
+        #     (1, 2),
+        #     (3, 2),
+        #     (4, 3),
+        # ]
+        # self.initialize_tree(postions_tree)
         #______________________________________________
 
     def play(self, x, y, action):
@@ -37,22 +41,35 @@ class Daily_Tents(boardgame.BoardGame):
         if self.read(x, y) == "":
             self.add_green((x, y))
         elif self.read(x, y) == "green":
-            self.add_tent((x, y))
+            if self.count_tents()+1 <= self.count_tree():
+                self.add_tent((x, y))
         elif self.read(x, y) == "⛺":
             self.clear_cell((x, y))
+        print(action)
             
     
-    def initializa_board(self, w, h) -> list[list]:
+    def initialize_board(self, w, h) -> list[list]:
         # width wich means the amount of cols we will have
         # heigth wich means the amount of rows we will have
         #The matrix will have [x(for the cols)][y(for the row)]
-        board = []
-        for i in range(h):
+        
+        # start with a list cause it's easier to manipulate
+        # h will be the amount of tree that will spawn
+        board = ["🌳"]*h+[""]*(h*w-h)
+        shuffle(board)
+        # transform the list to a matrix
+        new_board = []
+        for y in range(h):
             tmp = []
-            for j in range(w):
-                tmp.append("")
-            board.append(tmp)
-        return board
+            for x in range(w):
+                tmp.append(board[x+y*h])
+            new_board.append(tmp)
+
+
+        return new_board
+    
+    # TO DO
+    # def initialize_tents(self):
     
     def make_everything_green(self):
         for y in range(self.rows()):
@@ -92,17 +109,23 @@ class Daily_Tents(boardgame.BoardGame):
     def read(self, x, y): 
         return str(self._board[y][x])
     
+    def is_real_tent(self, pos):
+        x, y = pos
+        if self._real_board[y][x] == "⛺":
+            return True
+        return False
+    
     def get_column_tents(self, y) -> int:
         num = 0
         for x in range(self.cols()):
-            if self.is_tent((x, y)):
+            if self.is_real_tent((x, y)):
                 num += 1
         return num
     
     def get_row_tents(self, x):
         num = 0
         for y in range(self.rows()):
-            if self.is_tent((x, y)):
+            if self.is_real_tent((x, y)):
                 num += 1
         return num
         
@@ -154,13 +177,14 @@ class Daily_Tents(boardgame.BoardGame):
         return 0
 
     def finished(self): 
-        count_tree = 0
-        count_tents = 0
-        for pos in self.get_tree_pos():
-            count_tree += self.check_tents_around(pos)
-        for pos in self.get_tents_pos():
-            count_tents += self.check_tree_around(pos)
-        return count_tents == count_tree and self.count_tree() == count_tents
+        return self.count_tents() == self.count_tree()
+        # count_tree = 0
+        # count_tents = 0
+        # for pos in self.get_tree_pos():
+        #     count_tree += self.check_tents_around(pos)
+        # for pos in self.get_tents_pos():
+        #     count_tents += self.check_tree_around(pos)
+        # return count_tents == count_tree and self.count_tree() == count_tents
 
     def rows(self): return self._h
     
@@ -175,8 +199,6 @@ class Daily_Tents(boardgame.BoardGame):
 
 def main():
     b = Daily_Tents(5, 5)
-    # b.print_board()
-    # print(b.read(1, 0))
     boardgame.print_game(b)
 
 if __name__ == "__main__":
