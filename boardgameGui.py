@@ -16,7 +16,7 @@ BLACK, GRAY, WHITE, GREEN = (0, 0, 0), (127, 127, 127), (255, 255, 255), (0, 255
 
 class BoardGameGui:
     def __init__(self, game: BoardGame,
-                 actions={"LeftButton": "", "RightButton": "flag"},
+                 actions={"LeftButton": "", "RightButton": "flag", "g": "automate_green", "t":"automate_tents"},
                  annots={"#": (GRAY, 0), "!": (GRAY, 2)}):
         self._game = game
         self._actions = actions

@@ -5,7 +5,7 @@ import copy
 #   little rappresentation of the cells around
 POSITIONS_CELLS_AROUND = [
     (-1, -1),(0, -1),(1, -1),
-    (1, 0),          (1,  0),
+    (-1, 0),          (1,  0),
     (-1, +1),(0, +1),(+1,+1)
 ]
 
@@ -23,16 +23,20 @@ class Daily_Tents(boardgame.BoardGame):
         self._row_t = []
         self._board = self.initialize_board_file(file)
         self._real_board = copy.deepcopy(self._board)
-        self.remove_tents()
 
     def play(self, x, y, action):
-        if self.read(x, y) == "":
-            self.add_green((x, y))
-        elif self.read(x, y) == "green":
-            if self.count_tents()+1 <= self.count_tree():
-                self.add_tent((x, y))
-        elif self.read(x, y) == "⛺":
-            self.clear_cell((x, y))
+        if action == "automate_green":
+            self.automate_green()
+        if action == "automate_tents":
+            self.automate_tents()
+        if 0 <= x < self.cols() and 0 <= y < self.rows():
+            if self.read(x, y) == "":
+                self.add_green((x, y))
+            elif self.read(x, y) == "green":
+                if self.count_tents()+1 <= self.count_tree():
+                    self.add_tent((x, y))
+            elif self.read(x, y) == "⛺":
+                self.clear_cell((x, y))
             
     def initialize_board_file(self, file: str):
         dic = {
@@ -62,11 +66,26 @@ class Daily_Tents(boardgame.BoardGame):
         for p in positions:
             self.add_tent(p)
     
-    def make_everything_green(self):
+    def automate_green(self):
         for y in range(self.rows()):
             for x in range(self.cols()):
-                if self.read(x, y) == "":
+                if self.read(x, y) == "" and self.check_around((x, y), "🌳") == 0:
                     self.add_green((x, y))
+
+    def automate_tents(self):
+        for x, y in self.get_tree_pos():
+            for dx, dy in POSITIONS_CELLS_AROUND:
+                if 0 <= x+dx < self.cols() and 0 <= y+dy < self.rows():
+                    new_x = x+dx
+                    new_y = y+dy
+                    num_tr = self.get_row_tents(new_x)
+                    num_tc = self.get_column_tents(new_y)
+                    if (num_tr+1<=self.get_row_real_tents(new_x) and
+                        num_tc+1<=self.get_column_real_tents(new_y) and
+                        self.check_around((new_x, new_y), "⛺") == 0 and
+                        #comment the line below to win instantly
+                        self.read(new_x, new_y) != "green"):
+                        self.add_tent((new_x, new_y))
 
     def initialize_tree(self, positions):
         for p in positions:
@@ -100,17 +119,7 @@ class Daily_Tents(boardgame.BoardGame):
     def read(self, x, y): 
         return str(self._board[y][x])
     
-    def is_real_tent(self, pos):
-        x, y = pos
-        if self._real_board[y][x] == "⛺":
-            return True
-        return False
-    
     def get_column_real_tents(self, y) -> int:
-        # num = 0
-        # for x in range(self.cols()):
-        #     if self.is_real_tent((x, y)):
-        #         num += 1
         return self._col_t[y]
     
     def get_row_real_tents(self, x):
@@ -187,16 +196,16 @@ class Daily_Tents(boardgame.BoardGame):
         # cols check
         control = control and not any(self.get_row_real_tents(y) == self.get_row_tents(y) for y in range(self.rows()))
         # check around
-        control = control and not any(self.check_around(t_p, "⛺") for t_p in self.get_tents_pos())
+        control = control and not any(self.check_around(t_p, "⛺") != 0 for t_p in self.get_tents_pos())
         return not control
 
 
     def finished(self):
         control = self.count_tents() == self.count_tree()
         #print(f"check 1: {control}")
-        control = control and not any(self.check_adjacent(x, "⛺") == 0 for x in self.get_tree_pos())
+        control = not any(self.check_around(x, "⛺") == 0 for x in self.get_tree_pos())
         #print(f"check 2: {control}")
-        control = control and not any(self.check_adjacent(x, "🌳") == 0 for x in self.get_tents_pos())
+        control = control and not any(self.check_around(x, "🌳") == 0 for x in self.get_tents_pos())
         #print(f"check 3: {control}")
         control = control and self.constraint()
         return control
