@@ -168,6 +168,8 @@ class Daily_Tents(boardgame.BoardGame):
                 if cell == "⛺": positions.append((x, y))
         return positions
     
+    # def wrong() -> bool:
+
     def check_around(self, pos, element):
         n=0
         for dx, dy in POSITIONS_CELLS_AROUND:
@@ -190,20 +192,19 @@ class Daily_Tents(boardgame.BoardGame):
         return n  
 
     def constraint(self):
-        control = False
         # row check
-        control = control and not any(self.get_column_real_tents(x) == self.get_column_tents(x) for x in range(self.cols()))
+        control = not any(self.get_column_real_tents(x) != self.get_column_tents(x) for x in range(self.cols()))
         # cols check
-        control = control and not any(self.get_row_real_tents(y) == self.get_row_tents(y) for y in range(self.rows()))
+        control = control and not any(self.get_row_real_tents(y) != self.get_row_tents(y) for y in range(self.rows()))
         # check around
         control = control and not any(self.check_around(t_p, "⛺") != 0 for t_p in self.get_tents_pos())
-        return not control
+        return control
 
 
     def finished(self):
         control = self.count_tents() == self.count_tree()
         #print(f"check 1: {control}")
-        control = not any(self.check_around(x, "⛺") == 0 for x in self.get_tree_pos())
+        control = control and not any(self.check_around(x, "⛺") == 0 for x in self.get_tree_pos())
         #print(f"check 2: {control}")
         control = control and not any(self.check_around(x, "🌳") == 0 for x in self.get_tents_pos())
         #print(f"check 3: {control}")
