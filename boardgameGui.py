@@ -54,13 +54,13 @@ class BoardGameGui:
     def draw_nums_tents(self, cols, rows):
         # drawing num tents for the colums
         for x in range(rows):
-            text = str(self._game.get_row_tents(x))
+            text = str(self._game.get_row_real_tents(x))
             pos = (x , -1)
             self.write(text, pos)
 
         # drawing num tents for the colums
         for y in range(cols):
-            text = str(self._game.get_column_tents(y))
+            text = str(self._game.get_column_real_tents(y))
             pos = (-1 , y)
             self.write(text, pos)
 

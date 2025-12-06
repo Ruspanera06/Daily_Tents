@@ -3,7 +3,7 @@ import boardgame
 import boardgameGui
 
 def main():
-    game = Daily_Tents(5, 5)
+    game = Daily_Tents("tents-games/tents-2025-11-27-8x8-easy.txt")
     boardgameGui.gui_play(game)
 
 
