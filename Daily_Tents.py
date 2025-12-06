@@ -37,6 +37,7 @@ class Daily_Tents(boardgame.BoardGame):
                     self.add_tent((x, y))
             elif self.read(x, y) == "⛺":
                 self.clear_cell((x, y))
+        print(self.wrong())
             
     def initialize_board_file(self, file: str):
         dic = {
@@ -168,7 +169,16 @@ class Daily_Tents(boardgame.BoardGame):
                 if cell == "⛺": positions.append((x, y))
         return positions
     
-    # def wrong() -> bool:
+    def wrong(self) -> bool:
+        control = False
+        # control = control or self.constraint()
+        control = control or any(self.get_column_tents(x) > self.get_column_real_tents(x) for x in range(self.cols()))
+        control = control or any(self.get_row_tents(y) > self.get_row_real_tents(y) for y in range(self.rows()))
+        control = control or any(self.check_around(pos, "green")==self.count_cell_around(pos) and self.check_around(pos, "⛺")==0 
+                                 for pos in self.get_tree_pos())
+        
+        return control
+
 
     def check_around(self, pos, element):
         n=0
@@ -178,6 +188,15 @@ class Daily_Tents(boardgame.BoardGame):
             if 0 <= x < self.cols() and 0 <= y < self.rows():
                 if self.read(x, y) == element:
                     n+=1
+        return n
+    
+    def count_cell_around(self, pos):
+        n=0
+        for dx, dy in POSITIONS_CELLS_AROUND:
+            x, y = pos
+            x, y = x+dx, y+dy
+            if 0 <= x < self.cols() and 0 <= y < self.rows():
+                n+=1
         return n
     
     def check_adjacent(self, pos, element):
