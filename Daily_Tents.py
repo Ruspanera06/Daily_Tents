@@ -1,6 +1,7 @@
 import boardgame
 from random import shuffle
 import copy
+from time import sleep
 
 #   little rappresentation of the cells around
 POSITIONS_CELLS_AROUND = [
@@ -29,6 +30,8 @@ class Daily_Tents(boardgame.BoardGame):
             self.automate_green()
         if action == "automate_tents":
             self.automate_tents()
+        if action == "automatism":
+            self.automatism()
         if 0 <= x < self.cols() and 0 <= y < self.rows():
             if self.read(x, y) == "":
                 self.add_green((x, y))
@@ -37,7 +40,6 @@ class Daily_Tents(boardgame.BoardGame):
                     self.add_tent((x, y))
             elif self.read(x, y) == "⛺":
                 self.clear_cell((x, y))
-        print(self.wrong())
             
     def initialize_board_file(self, file: str):
         dic = {
@@ -66,7 +68,44 @@ class Daily_Tents(boardgame.BoardGame):
     def initialize_tents(self, positions):
         for p in positions:
             self.add_tent(p)
-    
+
+    def automatism(self):
+        self.try_out_all_opts()
+
+    def try_out_all_opts(self):
+        for y in range(self.rows()):
+            for x in range(self.cols()):
+                if self.read(x, y) == "":
+                    self.try_out_opts(x, y)
+
+    def try_out_opts(self, x, y):
+        copy1 = copy.deepcopy(self)
+        copy1.play(x, y, "")  # play option 1
+        copy1.automate_green()
+        copy1.automate_tents()
+        copy2 = copy.deepcopy(self)
+        copy2.play(x, y, "")  # play option 2
+        copy2.play(x, y, "")
+        copy2.automate_green()
+        copy2.automate_tents()
+        
+        if copy1.wrong():
+            self.play(x, y, "")  # play option 2
+            self.play(x, y, "")
+        elif copy2.wrong():
+            self.play(x, y, "")  # play option 1
+        else:
+            # find unavoidable outcome in some other cell @ (xo, yo)
+            for yo in range(self.rows()):
+                for xo in range(self.cols()):
+                    if (self.read(xo, yo) == "" and
+                        copy1.read(xo, yo) == copy2.read(xo, yo) != ""):
+                        if copy1.read(xo, yo) == "⛺":
+                            self.play(xo, yo, "")
+                            self.play(xo, yo, "")
+                        else:
+                            self.play(xo, yo, "")
+
     def automate_green(self):
         for y in range(self.rows()):
             for x in range(self.cols()):
@@ -171,12 +210,11 @@ class Daily_Tents(boardgame.BoardGame):
     
     def wrong(self) -> bool:
         control = False
-        # control = control or self.constraint()
         control = control or any(self.get_column_tents(x) > self.get_column_real_tents(x) for x in range(self.cols()))
         control = control or any(self.get_row_tents(y) > self.get_row_real_tents(y) for y in range(self.rows()))
         control = control or any(self.check_around(pos, "green")==self.count_cell_around(pos) and self.check_around(pos, "⛺")==0 
                                  for pos in self.get_tree_pos())
-        
+        control = control or any(self.check_around(pos, "⛺") > 0 for pos in self.get_tents_pos())
         return control
 
 
